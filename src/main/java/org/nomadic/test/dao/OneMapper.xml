@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.nomadic.test.dao.OneMapper">
+    <resultMap id="ResultMap" type="org.nomadic.test.domain.WordDO">
+        <id column="id" property="id"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_modified" property="gmtModified"/>
+        <result column="name" property="name"/>
+        <result column="features" property="features"/>
+    </resultMap>
+    <sql id="BaseColumn">
+        id,gmt_create,gmt_modified,name,features
+    </sql>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert INTO word (
+        <include refid="BaseColumn"/>
+        )VALUES (
+        null,
+        now(),
+        now(),
+        #{name},
+        #{features}
+        )
+    </insert>
+
+    <update id="update" parameterMap="ResultMap">
+        UPDATE word SET gmt_modified = now()
+        <if test="name != null">,name = #{name}</if>
+        <if test="features != null">,features = #{features}</if>
+        WHERE id = #{id}
+    </update>
+
+</mapper>
