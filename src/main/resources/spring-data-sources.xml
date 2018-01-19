@@ -26,24 +26,25 @@
         <property name="username" value="${defaultDbUser}"/>
         <property name="password" value="${defaultDbPassword}"/>
     </bean>
-
     <bean id="testDataSource" class="org.apache.commons.dbcp2.BasicDataSource">
         <property name="driverClassName" value="${defaultJdbcDriver}"/>
         <property name="url" value="${test2DbUrl}"/>
         <property name="username" value="${test2DbUser}"/>
         <property name="password" value="${test2DbPassword}"/>
     </bean>
+
+    <!--使用注释事务， transaction-manager 中指定的事务会成为默认事务，使用注解@Transactional 时，如果不指定具体的事务管理器，会使用这里指定的这个默认事务处理器。
+    所以，为了避免存在可能的多个事务加载（如在多个配置文件中都有tx:annotation-driven），和多个数据源问题，最好在@Transactional上指定事务管理器名称，即使是transactionManager。
+    即可保证，无论有多少个事务，谁在前谁在后，都可保证事务使用正确。
+    tx:annotation-driven 只需要配置一个即可。-->
+    <tx:annotation-driven transaction-manager="transactionManagerTest"/>
     <!-- 定义事务管理器 -->
-    <bean id="transactionManager"
-          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="defaultDataSource"/>
     </bean>
-    <bean id="transactionManagerTest"
-          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <bean id="transactionManagerTest" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="testDataSource"/>
     </bean>
-    <!--使用注释事务 -->
-    <tx:annotation-driven/>
 
     <!-- spring和MyBatis完美整合，不需要mybatis的配置映射文件 -->
     <bean id="defaultSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
@@ -55,7 +56,7 @@
     <bean id="testSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="testDataSource"/>
         <!-- 自动扫描mapping.xml文件，**表示迭代查找 -->
-        <property name="mapperLocations" value="classpath:org/nomadic/test/dao/OneMapper.xml"/>
+        <property name="mapperLocations" value="classpath:org/nomadic/test/daotest/OneTestMapper.xml"/>
     </bean>
 
     <!-- DAO接口所在包名，Spring会自动查找其下的类 ,包下的类需要使用@MapperScan注解,否则容器注入会失败 -->
@@ -66,7 +67,7 @@
 
     <!-- DAO接口所在包名，Spring会自动查找其下的类 ,包下的类需要使用@MapperScan注解,否则容器注入会失败 -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="org.nomadic.test.dao"/>
+        <property name="basePackage" value="org.nomadic.test.daotest"/>
         <property name="sqlSessionFactoryBeanName" value="testSqlSessionFactory"/>
     </bean>
 

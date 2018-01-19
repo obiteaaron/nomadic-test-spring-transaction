@@ -24,7 +24,7 @@
         )
     </insert>
 
-    <update id="update" parameterMap="ResultMap">
+    <update id="update" parameterType="org.nomadic.test.dao.OneMapper">
         UPDATE word SET gmt_modified = now()
         <if test="name != null">,name = #{name}</if>
         <if test="features != null">,features = #{features}</if>

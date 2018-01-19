@@ -15,6 +15,8 @@
     <context:property-placeholder ignore-unresolvable="true"
                                   location="classpath:application.properties"/>
 
+    <mvc:resources mapping="/index.html" location="/index.html" cache-period="31556926"/>
+
     <!-- 扫描控制器类 -->
     <context:component-scan base-package="org.nomadic.test.controller"/>
 

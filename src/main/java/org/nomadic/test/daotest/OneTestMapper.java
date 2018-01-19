@@ -1,4 +1,4 @@
-package org.nomadic.test.dao;
+package org.nomadic.test.daotest;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.nomadic.test.domain.WordDO;

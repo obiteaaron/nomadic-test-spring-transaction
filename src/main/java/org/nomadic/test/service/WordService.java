@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
-@Transactional(rollbackFor = Exception.class)
+@Transactional(value = "transactionManager", rollbackFor = Exception.class)
 @Service
 public class WordService {
 
@@ -18,6 +18,7 @@ public class WordService {
         WordDO wordDO = new WordDO();
         wordDO.setName(name);
         oneMapper.insert(wordDO);
+        throw new RuntimeException("用于rollback");
     }
 
     public void update(Long id, String name) {
