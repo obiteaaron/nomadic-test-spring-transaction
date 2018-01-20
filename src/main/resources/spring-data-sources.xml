@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-       http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+       http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
     <!-- 配置线程池 -->
     <bean id="taskExecutor"
@@ -37,6 +38,8 @@
     所以，为了避免存在可能的多个事务加载（如在多个配置文件中都有tx:annotation-driven），和多个数据源问题，最好在@Transactional上指定事务管理器名称，即使是transactionManager。
     即可保证，无论有多少个事务，谁在前谁在后，都可保证事务使用正确。
     tx:annotation-driven 只需要配置一个即可。-->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <!--下面这个会被忽略掉的，不起作用，可以在 TransactionInterceptor#setTransactionManagerBeanName 中打断点看-->
     <tx:annotation-driven transaction-manager="transactionManagerTest"/>
     <!-- 定义事务管理器 -->
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
@@ -71,4 +74,43 @@
         <property name="sqlSessionFactoryBeanName" value="testSqlSessionFactory"/>
     </bean>
 
+    <!--多事务的情况下，不要使用此种配置方式，最差也要使用下面2的配置方式-->
+    <!--<tx:advice id="1" transaction-manager="transactionManagerTest">-->
+        <!--<tx:attributes>-->
+            <!--<tx:method name="*" rollback-for="Exception"/>-->
+        <!--</tx:attributes>-->
+    <!--</tx:advice>-->
+
+    <!--<bean id="2" class="org.springframework.transaction.interceptor.TransactionInterceptor">-->
+        <!--<property name="transactionAttributeSource">-->
+            <!--<bean class="org.springframework.transaction.interceptor.NameMatchTransactionAttributeSource">-->
+                <!--<property name="nameMap">-->
+                    <!--<map>-->
+                        <!--<entry key="*">-->
+                            <!--<bean class="org.springframework.transaction.interceptor.RuleBasedTransactionAttribute">-->
+                                <!--&lt;!&ndash;指定要使用的事务&ndash;&gt;-->
+                                <!--<property name="qualifier" value="transactionManagerTest"/>-->
+                                <!--<property name="rollbackRules">-->
+                                    <!--<list>-->
+                                        <!--<bean class="org.springframework.transaction.interceptor.RollbackRuleAttribute">-->
+                                            <!--<constructor-arg type="java.lang.Class" value="java.lang.Exception"/>-->
+                                        <!--</bean>-->
+                                    <!--</list>-->
+                                <!--</property>-->
+                            <!--</bean>-->
+                        <!--</entry>-->
+                    <!--</map>-->
+                <!--</property>-->
+            <!--</bean>-->
+        <!--</property>-->
+        <!--&lt;!&ndash;指定默认事务，如果在transactionAttributeSource中配置了qualifier，那么这个可以不配置的&ndash;&gt;-->
+        <!--<property name="transactionManagerBeanName" value="transactionManager"/>-->
+    <!--</bean>-->
+
+    <!--<aop:config>-->
+        <!--<aop:pointcut id="interceptorPointCuts"-->
+                      <!--expression="execution(* org.nomadic.test.service.WordTestService.*(..))"/>-->
+        <!--<aop:advisor advice-ref="2"-->
+                     <!--pointcut-ref="interceptorPointCuts"/>-->
+    <!--</aop:config>-->
 </beans>
